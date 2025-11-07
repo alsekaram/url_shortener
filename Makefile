@@ -46,41 +46,41 @@ init:
 
 # Docker commands
 build:
-	docker-compose build
+	docker compose build
 
 up:
-	docker-compose up -d
+	docker compose up -d
 	@echo "✓ Services started"
 	@echo "  Web: http://localhost:8000"
 	@echo "  Health: http://localhost:8000/health"
 
 down:
-	docker-compose down
+	docker compose down
 
 restart:
-	docker-compose restart
+	docker compose restart
 
 rebuild:
-	docker-compose down
-	docker-compose build --no-cache
-	docker-compose up -d
+	docker compose down
+	docker compose build --no-cache
+	docker compose up -d
 
 # Logs
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 logs-web:
-	docker-compose logs -f web
+	docker compose logs -f web
 
 logs-scheduler:
-	docker-compose logs -f scheduler
+	docker compose logs -f scheduler
 
 # Shell access
 shell:
-	docker-compose exec web bash
+	docker compose exec web bash
 
 db-shell:
-	docker-compose exec web sqlite3 /app/data/links.db
+	docker compose exec web sqlite3 /app/data/links.db
 
 # CLI commands (require CODE, URL, TITLE, DAYS variables)
 create:
@@ -89,9 +89,9 @@ create:
 		exit 1; \
 	fi
 	@if [ -n "$(TITLE)" ]; then \
-		docker-compose exec web uv run python -m src.cli create $(CODE) $(URL) --title "$(TITLE)"; \
+		docker compose exec web uv run python -m src.cli create $(CODE) $(URL) --title "$(TITLE)"; \
 	else \
-		docker-compose exec web uv run python -m src.cli create $(CODE) $(URL); \
+		docker compose exec web uv run python -m src.cli create $(CODE) $(URL); \
 	fi
 
 update:
@@ -99,17 +99,17 @@ update:
 		echo "Usage: make update CODE=<code> URL=<url>"; \
 		exit 1; \
 	fi
-	docker-compose exec web uv run python -m src.cli update $(CODE) $(URL)
+	docker compose exec web uv run python -m src.cli update $(CODE) $(URL)
 
 delete:
 	@if [ -z "$(CODE)" ]; then \
 		echo "Usage: make delete CODE=<code>"; \
 		exit 1; \
 	fi
-	docker-compose exec web uv run python -m src.cli delete $(CODE)
+	docker compose exec web uv run python -m src.cli delete $(CODE)
 
 list:
-	docker-compose exec web uv run python -m src.cli list
+	docker compose exec web uv run python -m src.cli list
 
 stats:
 	@if [ -z "$(CODE)" ]; then \
@@ -117,20 +117,20 @@ stats:
 		exit 1; \
 	fi
 	@if [ -n "$(DAYS)" ]; then \
-		docker-compose exec web uv run python -m src.cli stats $(CODE) --days $(DAYS); \
+		docker compose exec web uv run python -m src.cli stats $(CODE) --days $(DAYS); \
 	else \
-		docker-compose exec web uv run python -m src.cli stats $(CODE); \
+		docker compose exec web uv run python -m src.cli stats $(CODE); \
 	fi
 
 report-daily:
-	docker-compose exec scheduler uv run python -m src.cli send-report daily
+	docker compose exec scheduler uv run python -m src.cli send-report daily
 
 report-weekly:
-	docker-compose exec scheduler uv run python -m src.cli send-report weekly
+	docker compose exec scheduler uv run python -m src.cli send-report weekly
 
 # Cleanup
 clean:
-	docker-compose down -v
+	docker compose down -v
 	@echo "✓ Containers and volumes removed"
 	@echo "  Note: data/ directory preserved"
 
