@@ -86,6 +86,9 @@ docker compose exec web uv run python -m src.cli list
 # Get statistics
 docker compose exec web uv run python -m src.cli stats doctor1 --days 7
 
+# View detailed clicks (IP, browser, time)
+docker compose exec web uv run python -m src.cli clicks doctor1 --limit 20
+
 # Send test report
 docker compose exec scheduler uv run python -m src.cli send-report daily
 ```
@@ -103,6 +106,9 @@ make list
 
 # View stats
 make stats CODE=doctor1
+
+# View detailed clicks
+make clicks CODE=doctor1
 
 # View logs
 make logs
@@ -133,12 +139,13 @@ docker compose restart        # Restart
 docker compose exec web uv run python -m src.cli create <code> <url> --title "Title"
 docker compose exec web uv run python -m src.cli list
 docker compose exec web uv run python -m src.cli stats <code>
+docker compose exec web uv run python -m src.cli clicks <code> --limit 20
 docker compose exec web uv run python -m src.cli delete <code>
 docker compose exec web uv run python -m src.cli reset-clicks <code>
 
 # Or use Makefile
 make up / down / restart / logs
-make create / list / stats / delete / reset-clicks
+make create / list / stats / clicks / delete / reset-clicks
 make report-daily / report-weekly
 ```
 

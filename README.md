@@ -164,6 +164,22 @@ make stats CODE=ivanov
 make stats CODE=ivanov DAYS=30
 ```
 
+#### Детальная статистика кликов (IP, браузер, источник)
+
+```bash
+# Последние 20 кликов (по умолчанию)
+make clicks CODE=ivanov
+
+# Последние 50 кликов
+make clicks CODE=ivanov LIMIT=50
+```
+
+Выводит таблицу с детальной информацией о каждом клике:
+- ⏰ Время клика (до секунд)
+- 🌐 IP адрес пользователя
+- 💻 User Agent (браузер/устройство)
+- 🔗 Referer (откуда пришли)
+
 #### Отправить отчет вручную
 
 ```bash
@@ -389,10 +405,20 @@ make report-daily
 **Таблица `clicks`:**
 - `id` - INTEGER PRIMARY KEY
 - `link_id` - INTEGER (FK → links.id)
-- `clicked_at` - TIMESTAMP
-- `user_agent` - TEXT
-- `ip_address` - TEXT
-- `referer` - TEXT
+- `clicked_at` - TIMESTAMP (точное время клика)
+- `user_agent` - TEXT (браузер/устройство пользователя)
+- `ip_address` - TEXT (IP адрес)
+- `referer` - TEXT (откуда пришёл пользователь)
+
+**Просмотр детальных кликов:**
+```bash
+# Через CLI
+make clicks CODE=ivanov LIMIT=50
+
+# Через SQL
+make db-shell
+sqlite> SELECT clicked_at, ip_address, user_agent FROM clicks WHERE link_id = 1;
+```
 
 ### Прямой доступ к БД
 
@@ -435,6 +461,9 @@ curl http://localhost:8000/health
 
 # Статистика по ссылке
 curl http://localhost:8000/api/links/ivanov/stats | jq
+
+# Детальная статистика кликов
+make clicks CODE=ivanov LIMIT=50
 ```
 
 ## 🛠️ Troubleshooting
@@ -575,8 +604,11 @@ make create CODE=sidorov URL=https://t.me/dr_sidorov TITLE="Доктор Сид�
 # Посмотреть все ссылки
 make list
 
-# Получить статистику
+# Получить общую статистику
 make stats CODE=ivanov DAYS=30
+
+# Посмотреть детали кликов (IP, браузер, время)
+make clicks CODE=ivanov LIMIT=50
 
 # Отправить отчет
 make report-daily

@@ -75,7 +75,8 @@ make logs            # Логи
 # Работа со ссылками
 make create CODE=doc1 URL=https://example.com TITLE="Doctor 1"
 make list            # Список всех ссылок
-make stats CODE=doc1 # Статистика
+make stats CODE=doc1 # Общая статистика
+make clicks CODE=doc1 # Детали кликов (IP, браузер, время)
 make delete CODE=doc1
 make reset-clicks CODE=doc1  # Обнулить счетчик
 
@@ -91,6 +92,7 @@ make report-weekly   # Отправить недельный отчет
 docker compose exec web uv run python -m src.cli create <code> <url> --title "Title"
 docker compose exec web uv run python -m src.cli list
 docker compose exec web uv run python -m src.cli stats <code>
+docker compose exec web uv run python -m src.cli clicks <code> --limit 50
 docker compose exec web uv run python -m src.cli update <code> <new-url>
 docker compose exec web uv run python -m src.cli delete <code>
 docker compose exec web uv run python -m src.cli reset-clicks <code>
@@ -154,6 +156,8 @@ make list
 
 ### Посмотреть статистику
 
+#### Общая статистика
+
 ```bash
 make stats CODE=ivanov DAYS=7
 ```
@@ -166,6 +170,25 @@ make stats CODE=ivanov DAYS=7
 Last 7 days: 12 clicks
 Total all time: 12 clicks
 Average per day: 1.7 clicks
+```
+
+#### Детальная статистика кликов
+
+```bash
+make clicks CODE=ivanov LIMIT=20
+```
+
+Вывод:
+```
+🖱️  Recent clicks for ivanov:
+Showing last 20 clicks
+
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Time                ┃ IP Address    ┃ User Agent           ┃ Referer       ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ 2025-11-07 14:23:15 │ 192.168.1.10  │ Mozilla/5.0 Chrome/… │ https://vk.…  │
+│ 2025-11-07 13:45:22 │ 192.168.1.15  │ Safari/17.0 iPhone…  │ direct        │
+└─────────────────────┴───────────────┴──────────────────────┴───────────────┘
 ```
 
 ### Отправить отчет в Telegram
