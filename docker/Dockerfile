@@ -7,10 +7,12 @@ WORKDIR /app
 
 # Копируем файлы проекта
 COPY pyproject.toml uv.lock .python-version ./
-COPY src/ ./src/
 
-# Устанавливаем зависимости через uv
-RUN uv sync --frozen --no-dev
+# Устанавливаем зависимости через uv (без установки самого проекта)
+RUN uv sync --frozen --no-dev --no-install-project
+
+# Копируем исходный код после установки зависимостей
+COPY src/ ./src/
 
 # Создаем директорию для данных
 RUN mkdir -p /app/data
