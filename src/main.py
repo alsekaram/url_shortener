@@ -86,7 +86,12 @@ async def redirect_link(
     
     # Extract request metadata
     user_agent = request.headers.get("user-agent")
-    ip_address = request.client.host if request.client else None
+    # Get real client IP from proxy headers or fall back to direct connection
+    ip_address = (
+        request.headers.get("x-forwarded-for", "").split(",")[0].strip() or
+        request.headers.get("x-real-ip") or
+        (request.client.host if request.client else None)
+    )
     referer = request.headers.get("referer")
     
     # Log click in background
