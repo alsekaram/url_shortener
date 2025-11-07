@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: linktrack-web
+    command: uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: linktrack-scheduler
+    command: uv run python -m src.scheduler
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  init:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: linktrack-init
+    command: uv run python -m src.cli init-db
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: "no"
+
+volumes:
+  data:
+    driver: local
+
+
