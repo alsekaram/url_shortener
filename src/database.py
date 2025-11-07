@@ -13,21 +13,19 @@ from src.models import Link, LinkStats
 logger = logging.getLogger(__name__)
 
 
-async def get_db_connection() -> aiosqlite.Connection:
-    """Get database connection."""
+def get_db_path() -> str:
+    """Get database path, ensuring parent directory exists."""
     db_path = Path(settings.database_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    conn = await aiosqlite.connect(str(db_path))
-    conn.row_factory = aiosqlite.Row
-    await conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    return str(db_path)
 
 
 async def create_tables() -> None:
     """Create database tables if they don't exist."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
+        
         await db.execute("""
             CREATE TABLE IF NOT EXISTS links (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,8 +75,9 @@ async def ensure_database_exists() -> None:
 
 async def create_link(short_code: str, target_url: str, title: Optional[str] = None) -> Link:
     """Create a new short link."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute(
             """
             INSERT INTO links (short_code, target_url, title)
@@ -101,8 +100,9 @@ async def create_link(short_code: str, target_url: str, title: Optional[str] = N
 
 async def get_link_by_code(short_code: str) -> Optional[Link]:
     """Get link by short code."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute(
             "SELECT * FROM links WHERE short_code = ?",
             (short_code,)
@@ -117,8 +117,9 @@ async def get_link_by_code(short_code: str) -> Optional[Link]:
 
 async def update_link(short_code: str, target_url: str) -> bool:
     """Update link target URL."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute(
             """
             UPDATE links 
@@ -134,8 +135,9 @@ async def update_link(short_code: str, target_url: str) -> bool:
 
 async def delete_link(short_code: str) -> bool:
     """Delete a link."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute(
             "DELETE FROM links WHERE short_code = ?",
             (short_code,)
@@ -147,8 +149,9 @@ async def delete_link(short_code: str) -> bool:
 
 async def get_all_links(limit: int = 50) -> list[dict]:
     """Get all links with click counts."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute(
             """
             SELECT 
@@ -178,8 +181,9 @@ async def log_click(
     referer: Optional[str] = None
 ) -> None:
     """Log a click event."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         await db.execute(
             """
             INSERT INTO clicks (link_id, user_agent, ip_address, referer)
@@ -192,8 +196,9 @@ async def log_click(
 
 async def get_link_stats(short_code: str, days: int = 7) -> dict:
     """Get statistics for a specific link."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         # Get link info
         link = await get_link_by_code(short_code)
         if not link:
@@ -234,8 +239,9 @@ async def get_link_stats(short_code: str, days: int = 7) -> dict:
 
 async def get_daily_stats() -> list[LinkStats]:
     """Get statistics for the last 24 hours."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         yesterday = datetime.now() - timedelta(days=1)
         day_before = datetime.now() - timedelta(days=2)
         
@@ -281,8 +287,9 @@ async def get_daily_stats() -> list[LinkStats]:
 
 async def get_weekly_stats() -> list[LinkStats]:
     """Get statistics for the last 7 days."""
-    db = await get_db_connection()
-    async with db:
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
         week_ago = datetime.now() - timedelta(days=7)
         
         cursor = await db.execute(
