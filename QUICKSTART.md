@@ -6,12 +6,12 @@ Get Doctor Link Tracker running in 5 minutes!
 
 Ensure you have:
 - ✅ Docker installed
-- ✅ Docker Compose installed
+- ✅ Docker Compose v2 installed
 
 ```bash
 # Check Docker
 docker --version
-docker-compose --version
+docker compose version
 ```
 
 ## Step 2: Clone & Setup
@@ -53,7 +53,7 @@ nano .env
 
 ```bash
 # Build and start all services
-docker-compose up -d
+docker compose up -d
 
 # Wait a few seconds, then check
 curl http://localhost:8000/health
@@ -68,7 +68,7 @@ Expected output:
 
 ```bash
 # Create a short link
-docker-compose exec web uv run python -m src.cli create \
+docker compose exec web uv run python -m src.cli create \
   doctor1 \
   https://instagram.com/doctor1 \
   --title "Doctor Smith"
@@ -81,13 +81,13 @@ curl -L http://localhost:8000/doctor1
 
 ```bash
 # List all links
-docker-compose exec web uv run python -m src.cli list
+docker compose exec web uv run python -m src.cli list
 
 # Get statistics
-docker-compose exec web uv run python -m src.cli stats doctor1 --days 7
+docker compose exec web uv run python -m src.cli stats doctor1 --days 7
 
 # Send test report
-docker-compose exec scheduler uv run python -m src.cli send-report daily
+docker compose exec scheduler uv run python -m src.cli send-report daily
 ```
 
 ## Step 7: Use Makefile (Optional)
@@ -115,25 +115,25 @@ make report-daily
 
 Your link tracker is now running at **http://localhost:8000**
 
-- 📊 Check logs: `docker-compose logs -f`
-- 🛑 Stop: `docker-compose down`
-- 🔄 Restart: `docker-compose restart`
+- 📊 Check logs: `docker compose logs -f`
+- 🛑 Stop: `docker compose down`
+- 🔄 Restart: `docker compose restart`
 - 📖 Full docs: See [README.md](README.md)
 
 ## Common Commands Cheatsheet
 
 ```bash
 # Management
-docker-compose up -d          # Start
-docker-compose down           # Stop
-docker-compose logs -f        # View logs
-docker-compose restart        # Restart
+docker compose up -d          # Start
+docker compose down           # Stop
+docker compose logs -f        # View logs
+docker compose restart        # Restart
 
 # CLI (through docker)
-docker-compose exec web uv run python -m src.cli create <code> <url> --title "Title"
-docker-compose exec web uv run python -m src.cli list
-docker-compose exec web uv run python -m src.cli stats <code>
-docker-compose exec web uv run python -m src.cli delete <code>
+docker compose exec web uv run python -m src.cli create <code> <url> --title "Title"
+docker compose exec web uv run python -m src.cli list
+docker compose exec web uv run python -m src.cli stats <code>
+docker compose exec web uv run python -m src.cli delete <code>
 
 # Or use Makefile
 make up / down / restart / logs

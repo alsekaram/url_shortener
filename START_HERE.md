@@ -42,7 +42,7 @@ EOF
 ### 2. Запустите сервисы
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 3. Проверьте работу
@@ -52,10 +52,10 @@ docker-compose up -d
 curl http://localhost:8000/health
 
 # Создать тестовую ссылку
-docker-compose exec web uv run python -m src.cli create test https://google.com --title "Test Link"
+docker compose exec web uv run python -m src.cli create test https://google.com --title "Test Link"
 
 # Посмотреть список
-docker-compose exec web uv run python -m src.cli list
+docker compose exec web uv run python -m src.cli list
 
 # Протестировать редирект
 curl -L http://localhost:8000/test
@@ -83,19 +83,19 @@ make report-daily    # Отправить дневной отчет
 make report-weekly   # Отправить недельный отчет
 ```
 
-### Через docker-compose
+### Через docker compose
 
 ```bash
 # CLI команды
-docker-compose exec web uv run python -m src.cli create <code> <url> --title "Title"
-docker-compose exec web uv run python -m src.cli list
-docker-compose exec web uv run python -m src.cli stats <code>
-docker-compose exec web uv run python -m src.cli update <code> <new-url>
-docker-compose exec web uv run python -m src.cli delete <code>
+docker compose exec web uv run python -m src.cli create <code> <url> --title "Title"
+docker compose exec web uv run python -m src.cli list
+docker compose exec web uv run python -m src.cli stats <code>
+docker compose exec web uv run python -m src.cli update <code> <new-url>
+docker compose exec web uv run python -m src.cli delete <code>
 
 # Отчеты
-docker-compose exec scheduler uv run python -m src.cli send-report daily
-docker-compose exec scheduler uv run python -m src.cli send-report weekly
+docker compose exec scheduler uv run python -m src.cli send-report daily
+docker compose exec scheduler uv run python -m src.cli send-report weekly
 ```
 
 ## 📊 Архитектура
@@ -273,7 +273,7 @@ url_shortener/
 
 ## 🎓 Следующие шаги
 
-1. ✅ Запустить сервисы: `docker-compose up -d`
+1. ✅ Запустить сервисы: `docker compose up -d`
 2. ✅ Создать первую ссылку
 3. ✅ Протестировать редирект
 4. ✅ Проверить отчеты в Telegram
@@ -298,6 +298,6 @@ url_shortener/
 
 **Готово к продакшену! 🚀**
 
-Все работает через Docker - просто `docker-compose up -d` и сервис готов!
+Все работает через Docker - просто `docker compose up -d` и сервис готов!
 
 

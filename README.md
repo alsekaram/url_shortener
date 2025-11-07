@@ -110,10 +110,10 @@ make logs
 make create CODE=ivanov URL=https://instagram.com/dr_ivanov TITLE="Доктор Иванов"
 ```
 
-Или через docker-compose напрямую:
+Или через docker compose напрямую:
 
 ```bash
-docker-compose exec web uv run python -m src.cli create ivanov https://instagram.com/dr_ivanov --title "Доктор Иванов"
+docker compose exec web uv run python -m src.cli create ivanov https://instagram.com/dr_ivanov --title "Доктор Иванов"
 ```
 
 #### Обновить URL
@@ -275,20 +275,20 @@ make clean
 
 ```bash
 # Запуск с выводом логов
-docker-compose up
+docker compose up
 
 # Запуск в фоне
-docker-compose up -d
+docker compose up -d
 
 # Остановка
-docker-compose down
+docker compose down
 
 # Просмотр логов
-docker-compose logs -f web
-docker-compose logs -f scheduler
+docker compose logs -f web
+docker compose logs -f scheduler
 
 # Перезапуск конкретного сервиса
-docker-compose restart web
+docker compose restart web
 ```
 
 ## 📁 Структура проекта
@@ -380,8 +380,8 @@ make report-daily
 # Через Makefile
 make db-shell
 
-# Через docker-compose
-docker-compose exec web sqlite3 /app/data/links.db
+# Через docker compose
+docker compose exec web sqlite3 /app/data/links.db
 
 # SQL запросы
 sqlite> SELECT * FROM links;
@@ -395,16 +395,16 @@ sqlite> .quit
 
 ```bash
 # Все сервисы
-docker-compose logs -f
+docker compose logs -f
 
 # Только web server
-docker-compose logs -f web
+docker compose logs -f web
 
 # Только scheduler
-docker-compose logs -f scheduler
+docker compose logs -f scheduler
 
 # Последние 100 строк
-docker-compose logs --tail=100 web
+docker compose logs --tail=100 web
 ```
 
 ### Метрики

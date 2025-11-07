@@ -13,7 +13,14 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
+# Check for Docker Compose v2 (docker compose) or v1 (docker-compose)
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
+    echo "✅ Docker Compose v2 detected"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+    echo "✅ Docker Compose v1 detected (consider upgrading to v2)"
+else
     echo "❌ Docker Compose is not installed. Please install Docker Compose first."
     exit 1
 fi
@@ -56,11 +63,11 @@ echo "✅ Data directory created"
 # Build and start services
 echo ""
 echo "Building Docker images..."
-docker-compose build
+$DOCKER_COMPOSE build
 
 echo ""
 echo "Starting services..."
-docker-compose up -d
+$DOCKER_COMPOSE up -d
 
 echo ""
 echo "Waiting for services to be healthy..."
@@ -73,7 +80,7 @@ if curl -f http://localhost:8000/health &> /dev/null; then
     echo "✅ Service is healthy!"
 else
     echo "⚠️  Service might still be starting up..."
-    echo "   Check logs: docker-compose logs -f"
+    echo "   Check logs: $DOCKER_COMPOSE logs -f"
 fi
 
 echo ""
@@ -85,16 +92,16 @@ echo "Health check: http://localhost:8000/health"
 echo ""
 echo "Next steps:"
 echo "  1. Create a link:"
-echo "     docker-compose exec web uv run python -m src.cli create test https://google.com"
+echo "     $DOCKER_COMPOSE exec web uv run python -m src.cli create test https://google.com"
 echo ""
 echo "  2. View all links:"
-echo "     docker-compose exec web uv run python -m src.cli list"
+echo "     $DOCKER_COMPOSE exec web uv run python -m src.cli list"
 echo ""
 echo "  3. Send test report:"
-echo "     docker-compose exec scheduler uv run python -m src.cli send-report daily"
+echo "     $DOCKER_COMPOSE exec scheduler uv run python -m src.cli send-report daily"
 echo ""
 echo "  4. View logs:"
-echo "     docker-compose logs -f"
+echo "     $DOCKER_COMPOSE logs -f"
 echo ""
 echo "For more commands, see README.md or run: make help"
 echo ""
