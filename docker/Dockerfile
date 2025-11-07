@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Копируем файлы проекта
-COPY pyproject.toml .python-version ./
+COPY pyproject.toml uv.lock .python-version ./
 COPY src/ ./src/
 
 # Устанавливаем зависимости через uv
