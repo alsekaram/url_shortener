@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs logs-web logs-scheduler shell db-shell clean init test reset-clicks
+.PHONY: help build up down restart logs logs-web logs-scheduler shell db-shell clean init test reset-clicks clicks
 
 # Default target
 help:
@@ -25,6 +25,7 @@ help:
 	@echo "  make reset-clicks CODE=<code> [FORCE=1]             - Reset click counter"
 	@echo "  make list                                           - List all links"
 	@echo "  make stats CODE=<code> [DAYS=7]                     - Show statistics"
+	@echo "  make clicks CODE=<code> [LIMIT=20]                  - Show recent clicks"
 	@echo "  make report-daily                                   - Send daily report"
 	@echo "  make report-weekly                                  - Send weekly report"
 	@echo ""
@@ -132,6 +133,17 @@ stats:
 		docker compose exec web uv run python -m src.cli stats $(CODE) --days $(DAYS); \
 	else \
 		docker compose exec web uv run python -m src.cli stats $(CODE); \
+	fi
+
+clicks:
+	@if [ -z "$(CODE)" ]; then \
+		echo "Usage: make clicks CODE=<code> [LIMIT=20]"; \
+		exit 1; \
+	fi
+	@if [ -n "$(LIMIT)" ]; then \
+		docker compose exec web uv run python -m src.cli clicks $(CODE) --limit $(LIMIT); \
+	else \
+		docker compose exec web uv run python -m src.cli clicks $(CODE); \
 	fi
 
 report-daily:
