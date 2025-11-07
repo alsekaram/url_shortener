@@ -138,6 +138,16 @@ make reset-clicks CODE=ivanov
 make reset-clicks CODE=ivanov FORCE=1
 ```
 
+#### Просмотр детальных кликов
+
+```bash
+# Последние 20 кликов (по умолчанию)
+make clicks CODE=ivanov
+
+# Последние 50 кликов
+make clicks CODE=ivanov LIMIT=50
+```
+
 #### Список всех ссылок
 
 ```bash

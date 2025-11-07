@@ -212,6 +212,50 @@ async def log_click(
         await db.commit()
 
 
+async def get_total_clicks(short_code: str) -> int:
+    """Get total number of clicks for a link."""
+    link = await get_link_by_code(short_code)
+    if not link:
+        raise ValueError(f"Link '{short_code}' not found")
+    
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
+        cursor = await db.execute(
+            "SELECT COUNT(*) as count FROM clicks WHERE link_id = ?",
+            (link.id,)
+        )
+        row = await cursor.fetchone()
+        return row["count"] if row else 0
+
+
+async def get_link_clicks(short_code: str, limit: int = 50) -> list[dict]:
+    """Get recent clicks for a specific link with metadata."""
+    link = await get_link_by_code(short_code)
+    if not link:
+        raise ValueError(f"Link '{short_code}' not found")
+    
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
+        cursor = await db.execute(
+            """
+            SELECT 
+                clicked_at,
+                ip_address,
+                user_agent,
+                referer
+            FROM clicks
+            WHERE link_id = ?
+            ORDER BY clicked_at DESC
+            LIMIT ?
+            """,
+            (link.id, limit)
+        )
+        rows = await cursor.fetchall()
+        return [dict(row) for row in rows]
+
+
 async def get_link_stats(short_code: str, days: int = 7) -> dict:
     """Get statistics for a specific link."""
     async with aiosqlite.connect(get_db_path()) as db:

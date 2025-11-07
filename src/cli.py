@@ -14,7 +14,9 @@ from src.database import (
     create_tables,
     delete_link,
     get_all_links,
+    get_link_clicks,
     get_link_stats,
+    get_total_clicks,
     reset_link_clicks,
     update_link,
 )
@@ -102,9 +104,8 @@ def reset_clicks(
 ):
     """Reset click counter for a specific link."""
     try:
-        # Get current stats before reset
-        stats = asyncio.run(get_link_stats(code, days=999999))
-        current_clicks = stats['total_clicks']
+        # Get current total clicks before reset
+        current_clicks = asyncio.run(get_total_clicks(code))
         
         if current_clicks == 0:
             console.print(f"Link [blue bold]{code}[/blue bold] already has 0 clicks", style="yellow")
@@ -200,6 +201,63 @@ def stats(
         raise typer.Exit(code=1)
     except Exception as e:
         console.print(f"✗ Failed to get statistics: {e}", style="red bold")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def clicks(
+    code: str = typer.Argument(..., help="Short code to get click details for"),
+    limit: int = typer.Option(20, "--limit", "-l", help="Number of recent clicks to show")
+):
+    """Show recent clicks with IP addresses and user agents."""
+    try:
+        clicks_data = asyncio.run(get_link_clicks(code, limit))
+        
+        if not clicks_data:
+            console.print(f"\nNo clicks found for [blue bold]{code}[/blue bold]", style="yellow")
+            return
+        
+        console.print(f"\n🖱️  Recent clicks for [blue bold]{code}[/blue bold]:", style="bold")
+        console.print(f"Showing last {len(clicks_data)} clicks\n")
+        
+        table = Table(title=f"Click Details")
+        table.add_column("Time", style="cyan", no_wrap=True)
+        table.add_column("IP Address", style="yellow")
+        table.add_column("User Agent", style="white")
+        table.add_column("Referer", style="dim")
+        
+        for click in clicks_data:
+            # Format timestamp
+            timestamp = click['clicked_at']
+            if timestamp:
+                # Extract just date and time (remove microseconds)
+                time_display = timestamp.replace('T', ' ')[:19] if 'T' in timestamp else timestamp[:19]
+            else:
+                time_display = "-"
+            
+            # Format IP
+            ip_display = click['ip_address'] or "-"
+            
+            # Format User Agent (truncate if too long)
+            user_agent = click['user_agent'] or "-"
+            if len(user_agent) > 80:
+                user_agent = user_agent[:77] + "..."
+            
+            # Format Referer (truncate if too long)
+            referer = click['referer'] or "-"
+            if len(referer) > 40:
+                referer = referer[:37] + "..."
+            
+            table.add_row(time_display, ip_display, user_agent, referer)
+        
+        console.print(table)
+        console.print(f"\nTotal clicks shown: {len(clicks_data)}", style="dim")
+        
+    except ValueError as e:
+        console.print(f"✗ {e}", style="red bold")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(f"✗ Failed to get click details: {e}", style="red bold")
         raise typer.Exit(code=1)
 
 
