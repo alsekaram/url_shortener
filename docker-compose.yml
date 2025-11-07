@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build:
@@ -19,9 +17,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    depends_on:
-      init:
-        condition: service_completed_successfully
 
   scheduler:
     build:
@@ -35,20 +30,8 @@ services:
       - .env
     restart: unless-stopped
     depends_on:
-      init:
-        condition: service_completed_successfully
-
-  init:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    container_name: linktrack-init
-    command: uv run python -m src.cli init-db
-    volumes:
-      - ./data:/app/data
-    env_file:
-      - .env
-    restart: "no"
+      web:
+        condition: service_healthy
 
 volumes:
   data:
