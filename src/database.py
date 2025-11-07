@@ -147,6 +147,24 @@ async def delete_link(short_code: str) -> bool:
         return cursor.rowcount > 0
 
 
+async def reset_link_clicks(short_code: str) -> int:
+    """Reset all clicks for a specific link. Returns number of deleted clicks."""
+    link = await get_link_by_code(short_code)
+    if not link:
+        raise ValueError(f"Link '{short_code}' not found")
+    
+    async with aiosqlite.connect(get_db_path()) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
+        cursor = await db.execute(
+            "DELETE FROM clicks WHERE link_id = ?",
+            (link.id,)
+        )
+        await db.commit()
+        logger.info(f"Reset {cursor.rowcount} clicks for link '{short_code}'")
+        return cursor.rowcount
+
+
 async def get_all_links(limit: int = 50) -> list[dict]:
     """Get all links with click counts."""
     async with aiosqlite.connect(get_db_path()) as db:

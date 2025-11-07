@@ -128,6 +128,16 @@ make update CODE=ivanov URL=https://new-url.com
 make delete CODE=ivanov
 ```
 
+#### Обнулить счетчик переходов
+
+```bash
+# С подтверждением
+make reset-clicks CODE=ivanov
+
+# Без подтверждения (для скриптов)
+make reset-clicks CODE=ivanov FORCE=1
+```
+
 #### Список всех ссылок
 
 ```bash

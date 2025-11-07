@@ -77,6 +77,7 @@ make create CODE=doc1 URL=https://example.com TITLE="Doctor 1"
 make list            # Список всех ссылок
 make stats CODE=doc1 # Статистика
 make delete CODE=doc1
+make reset-clicks CODE=doc1  # Обнулить счетчик
 
 # Отчеты
 make report-daily    # Отправить дневной отчет
@@ -92,6 +93,7 @@ docker compose exec web uv run python -m src.cli list
 docker compose exec web uv run python -m src.cli stats <code>
 docker compose exec web uv run python -m src.cli update <code> <new-url>
 docker compose exec web uv run python -m src.cli delete <code>
+docker compose exec web uv run python -m src.cli reset-clicks <code>
 
 # Отчеты
 docker compose exec scheduler uv run python -m src.cli send-report daily

@@ -134,10 +134,11 @@ docker compose exec web uv run python -m src.cli create <code> <url> --title "Ti
 docker compose exec web uv run python -m src.cli list
 docker compose exec web uv run python -m src.cli stats <code>
 docker compose exec web uv run python -m src.cli delete <code>
+docker compose exec web uv run python -m src.cli reset-clicks <code>
 
 # Or use Makefile
 make up / down / restart / logs
-make create / list / stats / delete
+make create / list / stats / delete / reset-clicks
 make report-daily / report-weekly
 ```
 

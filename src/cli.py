@@ -15,6 +15,7 @@ from src.database import (
     delete_link,
     get_all_links,
     get_link_stats,
+    reset_link_clicks,
     update_link,
 )
 from src.telegram import send_daily_report, send_weekly_report
@@ -91,6 +92,42 @@ def delete(
             raise typer.Exit(code=1)
     except Exception as e:
         console.print(f"✗ Failed to delete link: {e}", style="red bold")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def reset_clicks(
+    code: str = typer.Argument(..., help="Short code of the link to reset clicks for"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt")
+):
+    """Reset click counter for a specific link."""
+    try:
+        # Get current stats before reset
+        stats = asyncio.run(get_link_stats(code, days=999999))
+        current_clicks = stats['total_clicks']
+        
+        if current_clicks == 0:
+            console.print(f"Link [blue bold]{code}[/blue bold] already has 0 clicks", style="yellow")
+            return
+        
+        # Confirm action unless force flag is used
+        if not force:
+            console.print(f"\n⚠️  Warning: This will delete [red bold]{current_clicks}[/red bold] click records for [blue bold]{code}[/blue bold]")
+            if not typer.confirm("Are you sure you want to continue?"):
+                console.print("Operation cancelled", style="yellow")
+                raise typer.Exit()
+        
+        deleted_count = asyncio.run(reset_link_clicks(code))
+        console.print(
+            f"✓ Reset clicks for [blue bold]{code}[/blue bold]: {deleted_count} records removed",
+            style="green bold"
+        )
+        
+    except ValueError as e:
+        console.print(f"✗ {e}", style="red bold")
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(f"✗ Failed to reset clicks: {e}", style="red bold")
         raise typer.Exit(code=1)
 
 
