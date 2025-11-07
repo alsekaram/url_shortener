@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs logs-web logs-scheduler shell db-shell clean init test reset-clicks clicks
+.PHONY: help build up down restart logs logs-web logs-scheduler shell db-shell clean init test reset-clicks clicks check-data backup
 
 # Default target
 help:
@@ -30,8 +30,10 @@ help:
 	@echo "  make report-weekly                                  - Send weekly report"
 	@echo ""
 	@echo "Maintenance:"
-	@echo "  make clean         - Remove containers and volumes"
-	@echo "  make rebuild       - Rebuild and restart services"
+	@echo "  make clean         - Remove containers and volumes (with confirmation)"
+	@echo "  make rebuild       - Rebuild and restart services (preserves data)"
+	@echo "  make check-data    - Check database status"
+	@echo "  make backup        - Create database backup"
 
 # Setup commands
 init:
@@ -63,9 +65,17 @@ restart:
 	docker compose restart
 
 rebuild:
+	@echo "⚠️  Rebuilding containers (data will be preserved)"
+	@if [ -f data/links.db ]; then \
+		echo "📦 Database found: data/links.db"; \
+		ls -lh data/links.db; \
+	else \
+		echo "ℹ️  No database found yet"; \
+	fi
 	docker compose down
 	docker compose build --no-cache
 	docker compose up -d
+	@echo "✓ Rebuild complete"
 
 # Logs
 logs:
@@ -154,12 +164,49 @@ report-weekly:
 
 # Cleanup
 clean:
-	docker compose down -v
-	@echo "✓ Containers and volumes removed"
-	@echo "  Note: data/ directory preserved"
+	@echo "⚠️  WARNING: This will remove containers and Docker volumes"
+	@echo "  Database file (data/links.db) will be preserved"
+	@read -p "Continue? [y/N] " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		docker compose down -v; \
+		echo "✓ Containers and volumes removed"; \
+		echo "  Database: data/links.db preserved"; \
+	else \
+		echo "Cancelled"; \
+	fi
 
 # Health check
 health:
 	@curl -f http://localhost:8000/health || echo "Service not responding"
+
+# Check data status
+check-data:
+	@echo "📊 Data Directory Status:"
+	@echo ""
+	@if [ -d data ]; then \
+		echo "✓ data/ directory exists"; \
+		ls -lh data/; \
+		echo ""; \
+		if [ -f data/links.db ]; then \
+			echo "✓ Database file: data/links.db"; \
+			du -h data/links.db; \
+		else \
+			echo "⚠️  No database file found (will be created on first use)"; \
+		fi; \
+	else \
+		echo "✗ data/ directory missing"; \
+	fi
+
+# Backup database
+backup:
+	@if [ -f data/links.db ]; then \
+		backup_file="data/links.db.backup.$$(date +%Y%m%d_%H%M%S)"; \
+		cp data/links.db $$backup_file; \
+		echo "✓ Backup created: $$backup_file"; \
+		ls -lh $$backup_file; \
+	else \
+		echo "✗ No database file to backup"; \
+	fi
 
 

@@ -33,8 +33,4 @@ services:
       web:
         condition: service_healthy
 
-volumes:
-  data:
-    driver: local
-
 
