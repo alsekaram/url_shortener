@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from src.config import settings
 from src.database import ensure_database_exists, get_link_by_code, log_click
@@ -132,11 +132,14 @@ async def get_link_stats(code: str):
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: HTTPException):
     """Custom 404 handler."""
-    return {
-        "error": "not_found",
-        "message": "The requested resource was not found",
-        "path": str(request.url.path)
-    }
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error": "not_found",
+            "message": "The requested resource was not found",
+            "path": str(request.url.path)
+        }
+    )
 
 
 if __name__ == "__main__":
