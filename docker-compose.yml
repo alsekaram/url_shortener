@@ -13,11 +13,11 @@ services:
       - .env
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 5s           # Проверка каждые 5 секунд (было 30s)
-      timeout: 3s            # Таймаут 3 секунды (было 10s)
-      retries: 3             # 3 попытки
-      start_period: 40s      # Даём 40 секунд на запуск приложения
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 7200s # Проверка каждые 2 часа (было 30s)
+      timeout: 3s # Таймаут 3 секунды (было 10s)
+      retries: 3 # 3 попытки
+      start_period: 400s # Даём 400 секунд на запуск приложения
 
   scheduler:
     build:
@@ -33,5 +33,3 @@ services:
     depends_on:
       web:
         condition: service_healthy
-
-
