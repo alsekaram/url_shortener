@@ -56,8 +56,13 @@ def format_change_percent(change: float | None) -> str:
         return "0% ➡️"
 
 
-async def send_daily_report() -> None:
-    """Send daily statistics report to Telegram."""
+async def send_daily_report(skip_if_empty: bool = True) -> None:
+    """Send daily statistics report to Telegram.
+    
+    Args:
+        skip_if_empty: If True, don't send report when no activity (for scheduled reports).
+                       If False, send "no activity" message (for manual reports).
+    """
     logger.info("Generating daily report...")
     
     try:
@@ -65,9 +70,13 @@ async def send_daily_report() -> None:
         
         if not stats:
             logger.info("No activity to report for today")
-            # Optionally send "no activity" message
-            # await send_telegram_message("📊 Сегодня переходов не было")
-            return
+            if skip_if_empty:
+                # Don't send anything for scheduled reports
+                return
+            else:
+                # Send "no activity" message for manual reports
+                await send_telegram_message("📊 Сегодня переходов не было")
+                return
         
         # Calculate total
         total_clicks = sum(s.clicks_period for s in stats)
@@ -110,8 +119,13 @@ async def send_daily_report() -> None:
         raise
 
 
-async def send_weekly_report() -> None:
-    """Send weekly statistics report to Telegram."""
+async def send_weekly_report(skip_if_empty: bool = True) -> None:
+    """Send weekly statistics report to Telegram.
+    
+    Args:
+        skip_if_empty: If True, don't send report when no activity (for scheduled reports).
+                       If False, send "no activity" message (for manual reports).
+    """
     logger.info("Generating weekly report...")
     
     try:
@@ -119,7 +133,13 @@ async def send_weekly_report() -> None:
         
         if not stats:
             logger.info("No activity to report for this week")
-            return
+            if skip_if_empty:
+                # Don't send anything for scheduled reports
+                return
+            else:
+                # Send "no activity" message for manual reports
+                await send_telegram_message("📊 На этой неделе переходов не было")
+                return
         
         # Calculate dates
         today = datetime.now()

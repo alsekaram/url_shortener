@@ -268,15 +268,17 @@ def send_report(
         help="Report type: 'daily' or 'weekly'"
     )
 ):
-    """Manually send a report to Telegram."""
+    """Manually send a report to Telegram (sends even if no activity)."""
     try:
         report_type = report_type.lower()
         
         if report_type == "daily":
-            asyncio.run(send_daily_report())
+            # skip_if_empty=False для ручной отправки
+            asyncio.run(send_daily_report(skip_if_empty=False))
             console.print("✓ Daily report sent to Telegram", style="green bold")
         elif report_type == "weekly":
-            asyncio.run(send_weekly_report())
+            # skip_if_empty=False для ручной отправки
+            asyncio.run(send_weekly_report(skip_if_empty=False))
             console.print("✓ Weekly report sent to Telegram", style="green bold")
         else:
             console.print(
