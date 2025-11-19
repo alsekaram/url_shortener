@@ -20,8 +20,7 @@ cd /opt/url_shortener
 git pull origin main
 
 # 4. Пересоберите и перезапустите
-docker compose build
-docker compose restart
+make rebuild
 
 # 5. Проверьте отчет
 make report-daily
