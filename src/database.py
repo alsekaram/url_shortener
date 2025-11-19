@@ -266,8 +266,8 @@ async def get_link_stats(short_code: str, days: int = 7) -> dict:
         if not link:
             raise ValueError(f"Link '{short_code}' not found")
         
-        # Get clicks in period
-        since_date = datetime.now() - timedelta(days=days)
+        # Get clicks in period (use UTC to match database)
+        since_date = datetime.utcnow() - timedelta(days=days)
         cursor = await db.execute(
             """
             SELECT COUNT(*) as count
@@ -304,8 +304,11 @@ async def get_daily_stats() -> list[LinkStats]:
     async with aiosqlite.connect(get_db_path()) as db:
         db.row_factory = aiosqlite.Row
         await db.execute("PRAGMA foreign_keys = ON")
-        yesterday = datetime.now() - timedelta(days=1)
-        day_before = datetime.now() - timedelta(days=2)
+        # Use UTC time to match SQLite's CURRENT_TIMESTAMP
+        # Last 24 hours from now (in UTC)
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        # Previous 24 hours (48-24 hours ago, in UTC)
+        day_before = datetime.utcnow() - timedelta(days=2)
         
         cursor = await db.execute(
             """
@@ -352,7 +355,8 @@ async def get_weekly_stats() -> list[LinkStats]:
     async with aiosqlite.connect(get_db_path()) as db:
         db.row_factory = aiosqlite.Row
         await db.execute("PRAGMA foreign_keys = ON")
-        week_ago = datetime.now() - timedelta(days=7)
+        # Use UTC to match SQLite's CURRENT_TIMESTAMP
+        week_ago = datetime.utcnow() - timedelta(days=7)
         
         cursor = await db.execute(
             """
