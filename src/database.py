@@ -274,7 +274,7 @@ async def get_link_stats(short_code: str, days: int = 7) -> dict:
             FROM clicks
             WHERE link_id = ? AND clicked_at >= ?
             """,
-            (link.id, since_date.isoformat())
+            (link.id, since_date.strftime("%Y-%m-%d %H:%M:%S"))
         )
         row = await cursor.fetchone()
         clicks_period = row["count"] if row else 0
@@ -324,7 +324,11 @@ async def get_daily_stats() -> list[LinkStats]:
             HAVING clicks_today > 0 OR clicks_yesterday > 0
             ORDER BY clicks_today DESC
             """,
-            (yesterday.isoformat(), day_before.isoformat(), yesterday.isoformat())
+            (
+                yesterday.strftime("%Y-%m-%d %H:%M:%S"), 
+                day_before.strftime("%Y-%m-%d %H:%M:%S"), 
+                yesterday.strftime("%Y-%m-%d %H:%M:%S")
+            )
         )
         
         rows = await cursor.fetchall()
@@ -372,7 +376,7 @@ async def get_weekly_stats() -> list[LinkStats]:
             ORDER BY clicks_week DESC
             LIMIT 10
             """,
-            (week_ago.isoformat(),)
+            (week_ago.strftime("%Y-%m-%d %H:%M:%S"),)
         )
         
         rows = await cursor.fetchall()
