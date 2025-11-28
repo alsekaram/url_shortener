@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from src.analytics import track_yandex_hit
 from src.config import settings
@@ -103,7 +103,7 @@ async def redirect_link(
         if value := request.headers.get(header):
             extra_headers[header] = value
 
-    # Log click in background
+    # Log click in background (internal stats)
     background_tasks.add_task(
         log_click,
         link_id=link.id,
@@ -111,22 +111,50 @@ async def redirect_link(
         ip_address=ip_address,
         referer=referer
     )
-
-    # Send hit to Yandex Metrica (if configured)
-    background_tasks.add_task(
-        track_yandex_hit,
-        short_code=code,
-        target_url=link.target_url,
-        user_agent=user_agent,
-        ip_address=ip_address,
-        referer=referer,
-        params=dict(request.query_params),
-        extra_headers=extra_headers
-    )
     
     logger.info(f"Redirecting {code} -> {link.target_url}")
     
-    # Redirect to target URL
+    # Client-side redirect for better tracking
+    if settings.yandex_metrica_counter_id:
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Redirecting...</title>
+            <!-- Yandex.Metrika counter -->
+            <script type="text/javascript">
+               (function(m,e,t,r,i,k,a){{m[i]=m[i]||function(){{(m[i].a=m[i].a||[]).push(arguments)}};
+               m[i].l=1*new Date();
+               for (var j = 0; j < document.scripts.length; j++) {{if (document.scripts[j].src === r) {{ return; }}}}
+               k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+               }})(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id={settings.yandex_metrica_counter_id}", "ym");
+
+               ym({settings.yandex_metrica_counter_id}, "init", {{
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true
+               }});
+            </script>
+            <noscript><div><img src="https://mc.yandex.ru/watch/{settings.yandex_metrica_counter_id}" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+            <!-- /Yandex.Metrika counter -->
+            
+            <script>
+                setTimeout(function() {{
+                    window.location.replace("{link.target_url}");
+                }}, 100);
+            </script>
+            <meta http-equiv="refresh" content="1;url={link.target_url}">
+        </head>
+        <body>
+            <p>Redirecting to <a href="{link.target_url}">{link.target_url}</a>...</p>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+
+    # Fallback to server-side redirect if no counter ID
     return RedirectResponse(url=link.target_url, status_code=302)
 
 
