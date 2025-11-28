@@ -94,6 +94,7 @@ async def redirect_link(
         request.headers.get("x-real-ip") or
         (request.client.host if request.client else None)
     )
+    referer = request.headers.get("referer")
         
     # Extract additional headers for fingerprinting
     extra_headers = {}
