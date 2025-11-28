@@ -112,8 +112,8 @@ async def redirect_link(
 
     # Send hit to Yandex Metrica (if configured)
     # Send hit to Yandex Metrica (if configured)
-    # We await this synchronously to ensure the hit is sent before redirect
-    await track_yandex_hit(
+    background_tasks.add_task(
+        track_yandex_hit,
         short_code=code,
         target_url=link.target_url,
         user_agent=user_agent,
