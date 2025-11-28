@@ -95,6 +95,14 @@ async def redirect_link(
     )
     referer = request.headers.get("referer")
     
+    referer = request.headers.get("referer")
+    
+    # Extract additional headers for fingerprinting
+    extra_headers = {}
+    for header in ["accept-language", "accept", "sec-ch-ua", "sec-ch-ua-mobile", "sec-ch-ua-platform"]:
+        if value := request.headers.get(header):
+            extra_headers[header] = value
+
     # Log click in background
     background_tasks.add_task(
         log_click,
@@ -112,7 +120,8 @@ async def redirect_link(
         user_agent=user_agent,
         ip_address=ip_address,
         referer=referer,
-        params=dict(request.query_params)
+        params=dict(request.query_params),
+        extra_headers=extra_headers
     )
     
     logger.info(f"Redirecting {code} -> {link.target_url}")

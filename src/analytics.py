@@ -17,7 +17,8 @@ async def track_yandex_hit(
     user_agent: Optional[str] = None,
     ip_address: Optional[str] = None,
     referer: Optional[str] = None,
-    params: Optional[dict] = None
+    params: Optional[dict] = None,
+    extra_headers: Optional[dict] = None
 ) -> None:
     """
     Send hit to Yandex Metrica via Measurement Protocol.
@@ -29,6 +30,7 @@ async def track_yandex_hit(
         ip_address: Client IP address
         referer: Referer URL
         params: Query parameters from the request (e.g. yqrid, utm_*)
+        extra_headers: Additional headers to forward (Accept-Language, Client Hints, etc.)
     """
     if not settings.yandex_metrica_counter_id:
         return
@@ -65,6 +67,24 @@ async def track_yandex_hit(
         # and cookies (which we don't have).
         # We'll just send the hit.
 
+        # Headers to mimic the user's browser
+        headers = {
+            "User-Agent": user_agent or "Mozilla/5.0",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+        }
+        
+        # Override/Extend with real user headers if provided
+        if extra_headers:
+            # Filter out potentially dangerous or conflicting headers if necessary
+            # For now, we trust the caller to pass relevant ones
+            headers.update(extra_headers)
+        
+        # Try to pass IP via X-Forwarded-For (might work for some counters)
+        
+        # Try to pass IP via X-Forwarded-For (might work for some counters)
+        if ip_address:
+            headers["X-Forwarded-For"] = ip_address
+
         async with httpx.AsyncClient() as client:
             # We use the counter ID in the path
             url = f"https://mc.yandex.ru/watch/{settings.yandex_metrica_counter_id}"
@@ -72,6 +92,7 @@ async def track_yandex_hit(
             response = await client.get(
                 url,
                 params=params_body,
+                headers=headers,
                 timeout=5.0
             )
             
