@@ -23,7 +23,10 @@ async def track_yandex_hit(
     extra_headers: Optional[dict] = None
 ) -> None:
     """Send hit to Yandex Metrica via Measurement Protocol."""
+    logger.info(f"track_yandex_hit called for {short_code}")
+
     if not settings.yandex_metrica_counter_id:
+        logger.warning("No Yandex counter ID configured")
         return
 
     try:
@@ -72,6 +75,8 @@ async def track_yandex_hit(
         async with httpx.AsyncClient() as client:
             url = f"https://mc.yandex.ru/watch/{settings.yandex_metrica_counter_id}"
             
+            logger.info(f"Sending request to {url} with params {params_body}")
+            
             response = await client.get(
                 url,
                 params=params_body,
@@ -80,8 +85,8 @@ async def track_yandex_hit(
                 follow_redirects=True
             )
             
-            logger.info(f"Yandex Metrica: {response.status_code} for {tracked_url}")
+            logger.info(f"Yandex Metrica: {response.status_code}, {len(response.content)} bytes")
             logger.debug(f"Request URL: {response.url}")
 
     except Exception as e:
-        logger.error(f"Failed to send Yandex Metrica hit: {e}")
+        logger.error(f"Failed to send Yandex Metrica hit: {e}", exc_info=True)

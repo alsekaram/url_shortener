@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
     try:
         await ensure_database_exists()
         logger.info("Database initialized successfully")
+        logger.info(f"Yandex counter ID: {settings.yandex_metrica_counter_id}")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise
@@ -93,10 +94,7 @@ async def redirect_link(
         request.headers.get("x-real-ip") or
         (request.client.host if request.client else None)
     )
-    referer = request.headers.get("referer")
-    
-    referer = request.headers.get("referer")
-    
+        
     # Extract additional headers for fingerprinting
     extra_headers = {}
     for header in ["accept-language", "accept", "sec-ch-ua", "sec-ch-ua-mobile", "sec-ch-ua-platform"]:
@@ -113,8 +111,9 @@ async def redirect_link(
     )
 
     # Send hit to Yandex Metrica (if configured)
-    background_tasks.add_task(
-        track_yandex_hit,
+    # Send hit to Yandex Metrica (if configured)
+    # We await this synchronously to ensure the hit is sent before redirect
+    await track_yandex_hit(
         short_code=code,
         target_url=link.target_url,
         user_agent=user_agent,
