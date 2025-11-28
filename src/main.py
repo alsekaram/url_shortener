@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from src.analytics import track_yandex_hit
 from src.config import settings
 from src.database import ensure_database_exists, get_link_by_code, log_click
 
@@ -101,6 +102,17 @@ async def redirect_link(
         user_agent=user_agent,
         ip_address=ip_address,
         referer=referer
+    )
+
+    # Send hit to Yandex Metrica (if configured)
+    background_tasks.add_task(
+        track_yandex_hit,
+        short_code=code,
+        target_url=link.target_url,
+        user_agent=user_agent,
+        ip_address=ip_address,
+        referer=referer,
+        params=dict(request.query_params)
     )
     
     logger.info(f"Redirecting {code} -> {link.target_url}")
